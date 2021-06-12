@@ -8,18 +8,9 @@ type Circle    = (Point,Float)
 -- Paletas
 -------------------------------------------------------------------------------
 
--- Paleta (R, G, B) só com tons de verde "hard-coded" 
--- (pode ser melhorado substituindo os valores literais por parâmetros)
--- Além disso, o que acontecerá se n for muito grande ou negativo?
-greenPalette :: Int -> [(Int,Int,Int)]
-greenPalette n = [(0, 80+i*10, 0) | i <- [0..n] ]
-
--- Paleta com n valores retirados de uma lista com sequências de R, G e B 
 -- O '$' é uma facilidade sintática que substitui parênteses
 -- O cycle é uma função bacana -- procure saber mais sobre ela :-)
-rgbPalette :: Int -> [(Int,Int,Int)]
-rgbPalette n = take n $ cycle [(255,0,0),(0,255,0),(0,0,255)]
---hmm agora ele vai ciclicamente do preto ao azul. Quando chega ao 255, volta a 0.
+--Agora ele vai ciclicamente do preto ao azul. Quando chega ao 255, volta a 0.
 sequenceBluePalette:: Int -> [(Int, Int, Int)]
 sequenceBluePalette n = take n $ cycle [(0,0,x) | x <- [0 .. 255]]
 
@@ -28,21 +19,22 @@ sequenceBluePalette n = take n $ cycle [(0,0,x) | x <- [0 .. 255]]
 -------------------------------------------------------------------------------
 -- Geração de retângulos em suas posições
 -------------------------------------------------------------------------------
-
+-- Vou gerar quadrados e nao retangulos, pois, do contrario, nao e possivel colocar um circulo dentro (na verdade até dá, mas fica feio)
 genRectsInLine :: Int -> Int -> Float-> Float -> Float -> Float -> Float -> Float -> [Rect]
 genRectsInLine 0 column  w h xgap ygap initialx initialy = []
 genRectsInLine line column w h xgap ygap initialx initialy = [((initialx+m*(w+xgap), initialy), w, h) | m <- [0..fromIntegral (line-1)]] ++ genRectsInLine line (column - 1) w h xgap ygap initialx (initialy + h + ygap)
 --Essa funcao gera quadrados em linha, depois se chama recursivamente pra fazer tudo de novo em outra coordenada y+h+ygap, a condicao de parada dela eh ter 0 colunas restantes pra desenhar
 
---Agora vai incrementando os dois lados. Penso que seria legal se eu pudesse aumentar as duas variáveis em paralelo e não usar a mesma, mas o suporte a isso não parece funcionar no repl.it. Vou dizer que fiz uma função identidade que vai trocando de cor (uma que começa de cima, no caso)
+
 genRectsInDiagonal :: Int -> [Rect]
 genRectsInDiagonal n  = [((m*(w+gap), (m*(w+gap))), w, h) | m <- [0..fromIntegral (n-1)]]
   where (w,h) = (3,3)
         gap = 1
 
-genCircles :: Int -> [Circle]
-genCircles r = [((w+r,w+r), r) | r <- [0..fromIntegral (r-1)]]
-  where (w,h) = (3,3)
+genCircles ::  Int -> Int -> Float -> Float -> Float -> Float -> Float -> [Circle]
+genCircles 0 column r xgap ygap initialx initialy = []
+
+genCircles line column r xgap ygap initialx initialy = [((initialx, m*(r+ygap)*initialy), r) | m <- [0..fromIntegral (line-1)]] ++ genCircles (line - 1) column r xgap ygap initialx (initialx + r + xgap)
 -------------------------------------------------------------------------------
 -- Strings SVG
 -------------------------------------------------------------------------------
@@ -86,10 +78,11 @@ main = do
   where svgstrs = svgBegin w h ++ svgfinalrects ++ svgfinalcircles ++ svgEnd
         svgfinalrects = svgElements svgRect rects (map svgStyle palette)
         svgfinalcircles = svgElements svgCircle circles (map svgStyle palette)
-        circles = genCircles 50
-        rects = genRectsInLine 100 100 30 20 5 10 300 400
-        nrects = 100*100
+        circles = genCircles 5 10 30 5 10 300 400
+        rects = genRectsInLine 5 10 30 30 5 10 300 400
+        nrects = 5*10
         palette = sequenceBluePalette nrects
+        --circlePalette = 
         (w,h) = (5000,5000) -- width,height da imagem SVG
 
 
