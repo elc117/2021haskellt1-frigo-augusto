@@ -1,9 +1,10 @@
 import Text.Printf
+import Foreign.C.Types
 
 type Point     = (Float,Float)
 type Rect      = (Point,Float,Float)
 type Circle    = (Point,Float)
-type Ellipse = (Point, Float, Float)
+type Ellipsis = (Point, Float, Float)
 
 -------------------------------------------------------------------------------
 -- Paletas
@@ -33,11 +34,11 @@ genRectsInDiagonal n  = [((m*(w+gap), (m*(w+gap))), w, h) | m <- [0..fromIntegra
 
 
 
--- Vou gerar quadrados e nao retangulos, pois, do contrario, nao e possivel colocar um circulo dentro (na verdade até dá, mas fica feio)
+
 genRectsInLine :: Int -> Int -> Float-> Float -> Float -> Float -> Float -> Float -> [Rect]
 genRectsInLine column 0  w h xgap ygap initialx initialy = []
 genRectsInLine column line w h xgap ygap initialx initialy = [((initialx+m*(w+xgap), initialy), w, h) | m <- [0..fromIntegral (column-1)]] ++ genRectsInLine column (line - 1) w h xgap ygap initialx (initialy + h + ygap)
---Essa funcao gera quadrados em linha, depois se chama recursivamente pra fazer tudo de novo em outra coordenada y+h+ygap, a condicao de parada dela eh ter 0 colunas restantes pra desenhar
+--Essa funcao gera retangulos em linha, depois se chama recursivamente pra fazer tudo de novo em outra coordenada y+h+ygap, a condicao de parada dela eh ter 0 colunas restantes pra desenhar
 
 
 
@@ -46,6 +47,20 @@ genCircles 0 line r xgap ygap initialx initialy fullfill= []
 genCircles column line r xgap ygap initialx initialy False= [] ++ genCircles (column - 1) line r xgap ygap (initialx + 2*r + xgap) initialy True
 
 genCircles column line r xgap ygap initialx initialy True = [((initialx, m*(2*r+ygap)+initialy), r) | m <- [0..fromIntegral (line-1)]] ++ genCircles (column - 1) line r xgap ygap (initialx + 2*r + xgap) initialy False
+
+--------
+
+------Elipse
+genEllipsis ::  Int -> Int -> Float -> Float -> Float -> Float -> Float -> Float -> Bool -> [Ellipsis]
+genEllipsis 0 line rx ry xgap ygap initialx initialy fullfill= []
+
+genEllipsis column line rx ry xgap ygap initialx initialy False= [] ++ genEllipsis (column - 1) line rx ry xgap ygap (initialx + 2*rx + xgap) initialy True
+
+genEllipsis column line rx ry xgap ygap initialx initialy True = [((initialx, m*(2*ry+ygap)+initialy), rx,ry) | m <- [0..fromIntegral (line-1)]] ++ genEllipsis (column - 1) line rx ry xgap ygap (initialx + 2*rx + xgap) initialy False
+
+-----------------
+
+
 -------------------------------------------------------------------------------
 -- Strings SVG
 -------------------------------------------------------------------------------
@@ -60,9 +75,8 @@ svgRect ((x,y),w,h) style =
 svgCircle :: Circle -> String -> String
 svgCircle ((x,y),r) style = printf "<circle cx='%.3f' cy='%.3f' r='%.2f' style='%s' />\n" x y r style
 
-svgEllipse :: Ellipse -> String -> String
-svgEllipse ((x,y), rx, ry) style = printf "<ellipse cx="200" cy="80" rx="100" ry="50"
-  style="fill:yellow;stroke:purple;stroke-width:2" />"
+svgEllipsis :: Ellipsis -> String -> String
+svgEllipsis ((x,y), rx, ry) style = printf "<ellipse cx='%.3f' cy='%.3f' rx='%.3f' ry='%.3f' style='%s' />" x y rx ry style
  
 -- String inicial do SVG
 
@@ -90,19 +104,29 @@ svgElements func elements styles = concat $ zipWith func elements styles
 main :: IO ()
 main = do
   writeFile "rects.svg" $ svgstrs
-  where svgstrs = svgBegin w h ++ svgfinalrects ++ svgfinalcircles ++ svgEnd
+  where svgstrs = svgBegin img_width img_height ++ svgfinalrects ++ svgfinalellipsis ++ svgEnd
         svgfinalrects = svgElements svgRect rects (map svgStyle palette)
-        svgfinalcircles = svgElements svgCircle circles (map svgStyle circlePalette)
-        circles = genCircles   5 10  15   5 10 315 415 True
-        --parametros do circulo: colunas linhas raio xgap ygap (initialx + r) (initialy + r)
-        rects = genRectsInLine 5 10 30 30 5 10 300 400
-        nrects = 5*10
-        lines = 10
-        columns = 5
+        svgfinalellipsis = svgElements svgEllipsis ellipsis (map svgStyle ellipsisPalette)
+
+        ellipsis = genEllipsis  columns lines  rx ry xgap ygap (initialx + rx) (initialy + ry) True
+
+        rects = genRectsInLine columns lines rect_width rect_height xgap ygap initialx initialy
+
+        nrects = columns*lines
+        rx = rect_width/2
+        ry = rect_height/2
+        initialx = 300
+        initialy = 400
+        ygap = 10
+        xgap = 5
+        rect_width = 30
+        rect_height = 20
+        lines = 100
+        columns = 50
         ncircles = nrects
         palette = sequenceBluePalette nrects
-        circlePalette = sequenceRedPalette ncircles
-        (w,h) = (5000,5000) -- width,height da imagem SVG
+        ellipsisPalette = sequenceRedPalette ncircles
+        (img_width,img_height) = (5000,5000) -- width,height da imagem SVG
 
 
 
