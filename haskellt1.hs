@@ -33,25 +33,28 @@ sequenceRedPalette n initial increment = take n $ cycle [(x,0,0) | x <- [initial
 
 
 
-
+---Retangulos
 genRectsInLine :: Int -> Int -> Float-> Float -> Float -> Float -> Float -> Float -> [Rect]
 genRectsInLine column 0  w h xgap ygap initialx initialy = []
 genRectsInLine column line w h xgap ygap initialx initialy = 
-  [((initialx+m*(w+xgap), initialy), w, h) | m <- [0..fromIntegral (column-1)]] ++ genRectsInLine column (line - 1) w h xgap ygap initialx (initialy + h + ygap)
+  [((initialx+m*(w+xgap), initialy), w, h) | m <- [0..fromIntegral (column-1)]] ++
+  genRectsInLine column (line - 1) w h xgap ygap initialx (initialy + h + ygap)
 --Essa funcao gera retangulos em linha, depois se chama recursivamente pra fazer tudo de novo em outra coordenada y+h+ygap, a condicao de parada dela eh ter 0 colunas restantes pra desenhar
 
 
---------
+
 
 ------Elipse
 genEllipsis ::  Int -> Int -> Float -> Float -> Float -> Float -> Float -> Float -> Bool -> [Ellipsis]
 genEllipsis 0 line rx ry xgap ygap initialx initialy fullfill= []
 
 genEllipsis column line rx ry xgap ygap initialx initialy False= 
-  [((initialx, initialy), rx, ry)] ++ [(((initialx, initialy+((fromIntegral (line-1))*(2*ry+ygap))), rx, ry))] ++ genEllipsis (column - 1) line rx ry xgap ygap (initialx + 2*rx + xgap) initialy True
+  [((initialx, initialy), rx, ry)] ++ [(((initialx, initialy+((fromIntegral (line-1))*(2*ry+ygap))), rx, ry))] ++
+  genEllipsis (column - 1) line rx ry xgap ygap (initialx + 2*rx + xgap) initialy True
 
 genEllipsis column line rx ry xgap ygap initialx initialy True = 
-  [((initialx, m*(2*ry+ygap)+initialy), rx,ry) | m <- [0..fromIntegral (line-1)]] ++ genEllipsis (column - 1) line rx ry xgap ygap (initialx + 2*rx + xgap) initialy False
+  [((initialx, m*(2*ry+ygap)+initialy), rx,ry) | m <- [0..fromIntegral (line-1)]] ++
+  genEllipsis (column - 1) line rx ry xgap ygap (initialx + 2*rx + xgap) initialy False
 --Aqui ele vai gerar a lista de elipses e seus raios e coordenadas. Essas coordenadas foram calculadas considerando a posicao dos quadrados. Segue uma logica semelhante a funcao de geracao de retangulos, ajustada para ser feita na direcao do eixo y. O valor booleano da funcao eh o fullfill, que serve pra indicar se a coluna de quadrados vai ser preenchida ou se vai receber elipses somente em seu topo e embaixo.
 -----------------
 
@@ -94,6 +97,8 @@ svgElements func elements styles = concat $ zipWith func elements styles
 
 main :: IO ()
 main = do
+----INPUT DO USUARIO-------
+---------------------------
   putStrLn("Quantas linhas de retangulos?(INT)")
   input_lines <- getLine
   putStrLn("Quantas colunas de retangulos?(INT)")
@@ -118,8 +123,13 @@ main = do
   input_initial_redRGB <- getLine
   putStrLn("Qual o valor de incremento do RGB vermelho?(INT)")
   input_increment_redRGB <- getLine
-
+----------------------------------
+----------------------------------
   
+
+  ---------CHAMADA DE FUNCOES E CALCULOS
+  -------------------------------------
+
   let   svgstrs = svgBegin img_width img_height ++ svgfinalrects ++ svgfinalellipsis ++ svgEnd
         svgfinalrects = svgElements svgRect rects (map svgStyle rectPalette)
         svgfinalellipsis = svgElements svgEllipsis ellipsis (map svgStyle ellipsisPalette)
@@ -136,7 +146,11 @@ main = do
         rx = rect_width/2
         ry = rect_height/2
         nellipsis = nrects
+---------------------------------------
+---------------------------------------
 
+
+---------------CONVERSAO DA STRING OBTIDA DO USUARIO ------------------------------------
         initialx = read input_initialx :: Float
         initialy = read input_initialy :: Float
         xgap = read input_xgap :: Float
@@ -149,6 +163,8 @@ main = do
         increment_blueRGB = read input_increment_blueRGB :: Int
         initial_redRGB = read input_initial_redRGB :: Int
         increment_redRGB = read input_increment_redRGB :: Int
+-----------------------------------
+-----------------------------------
 
 
 

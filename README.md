@@ -1,4 +1,4 @@
-# Trabalho 1 de Paradigmas de programação
+# Trabalho 1 de Paradigmas de programação - Haskell
 
   ## Objetivo
 
@@ -7,6 +7,50 @@
   ## Informações gerais
 
   É Possível escolher distâncias personalizadas e tamanhos livremente, bem como coordenadas iniciais. Os retângulos com elipses serão sempre desenhados de forma retangular, não sendo possível desenhar escadas, por exemplo. As elipses sempre aparecerão completando os quadrados pelo eixo y e depois completando só o primeiro e o último quadrado do eixo y, ciclicamente.
+
+  ## Observações
+
+  Cuidado com o RGB que colocar, pode parecer que o programa não está desenhando a elipse, mas na verdade as cores podem estar apenas muito próximas.
+
+  ## Sugestão de uso
+
+  Quantas linhas de retangulos?(INT)
+  10
+
+  Quantas colunas de retangulos?(INT)
+  10
+
+  Qual a coordenada x inicial?(FLOAT)
+  0
+
+  Qual a coordenada y inicial?(FLOAT)
+  0
+
+  Qual o espaco entre quadrados no eixo x?(FLOAT)
+  10
+
+  Qual o espaco entre quadrados no eixo y?(FLOAT)
+  10
+
+  Qual a altura dos retangulos?(FLOAT)
+  90
+
+  Qual a largura dos retangulos?(FLOAT)
+  90
+
+  Qal o valor inicial do RGB azul?(INT)
+  120
+
+  Qual o valor de incremento do RGB azul?(INT)
+  10
+
+  Qual o valor inicial do RGB vermelho?(INT)
+  120
+
+  Qual o valor de incremento do RGB vermelho?(INT)
+  10
+
+  É interessante, também, utilizar o input acima com valores diferentes de largura e altura dos retângulos,pois há suporte a elipses.
 
   ## Implementação
 
